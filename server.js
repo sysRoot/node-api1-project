@@ -1,8 +1,11 @@
 const db = require('./data/db');
-
+const morgan = require('morgan');
 const express = require('express');
 
 const server = express();
+
+server.use(express.json());
+server.use(morgan('default'));
 
 server.get('/', (req, res) => {
     res.send('Hello World');
@@ -10,7 +13,21 @@ server.get('/', (req, res) => {
 
 server.get('/api/users', async (req, res, next) => {
     const answer = await db.find();
-    res.status(200).json(answer);
+    try {
+        res.status(200).json(answer);
+    } catch (err) {
+        res.status(500).json('Error fetching users');
+    }
+});
+
+server.get('/api/users/:id', async (req, res, next) => {
+        const answer = await db.findById(req.params.id);
+        try {
+            res.status(200).json(answer);
+        } catch (err) {
+            console.log(err);
+            res.status(404).json('Error fetching user by ID: not found.');
+        }
 });
 
 server.post('/api/users', async (req, res, next) => {
@@ -21,8 +38,9 @@ server.post('/api/users', async (req, res, next) => {
                 bio: req.body.bio,
             });
             try {
-                res.status(200).json(answer);
+                res.status(201).json(answer);
             } catch (err) {
+                res.status(500).json('There was an error saving the user');
                 console.log('failure has occurred', err);
             }
         }
@@ -31,6 +49,16 @@ server.post('/api/users', async (req, res, next) => {
         }
     } else {
         res.status(400).json('No body');
+    }
+});
+
+server.delete('/api/users/:id', async (req, res, next) => {
+    const answer = await db.remove(req.params.id);
+    try {
+        res.status(200).json(`Successfully deleted user with id ${req.params.id}`);
+    } catch (err) {
+        console.log(err, 'something');
+        res.status(404).json('Error deleting user by ID: not found.');
     }
 });
 
