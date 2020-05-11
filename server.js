@@ -21,13 +21,13 @@ server.get('/api/users', async (req, res, next) => {
 });
 
 server.get('/api/users/:id', async (req, res, next) => {
-        const answer = await db.findById(req.params.id);
-        try {
-            res.status(200).json(answer);
-        } catch (err) {
-            console.log(err);
-            res.status(404).json('Error fetching user by ID: not found.');
-        }
+    const answer = await db.findById(req.params.id);
+    try {
+        res.status(200).json(answer);
+    } catch (err) {
+        console.log(err);
+        res.status(404).json('Error fetching user by ID: not found.');
+    }
 });
 
 server.post('/api/users', async (req, res, next) => {
@@ -55,10 +55,31 @@ server.post('/api/users', async (req, res, next) => {
 server.delete('/api/users/:id', async (req, res, next) => {
     const answer = await db.remove(req.params.id);
     try {
-        res.status(200).json(`Successfully deleted user with id ${req.params.id}`);
+        res.status(200).json(
+            `Successfully deleted user with id ${req.params.id}`
+        );
     } catch (err) {
         console.log(err, 'something');
         res.status(404).json('Error deleting user by ID: not found.');
+    }
+});
+
+server.put('/api/users/:id', async (req, res, next) => {
+    if (req.body.bio && req.body.name) {
+        const answer = await db.remove(req.params.id);
+        try {
+            res.status(200).json({
+                success: `Successfully updated user with id ${req.params.id}`,
+                result: answer,
+            });
+        } catch (err) {
+            console.log(err, 'something');
+            res.status(500).json('Something happened');
+        }
+    } else {
+        if (!req.body.name || !req.body.bio) {
+            res.status(400).json('Must include Name AND Bio');
+        }
     }
 });
 
